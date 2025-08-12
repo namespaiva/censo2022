@@ -1,0 +1,11 @@
+.streamlit/
+secrets.toml
+.venv/
+queries/
+tabela9514.xlsx
+*.pyc
+__pycache__/
+qgis/
+csv tabelas/
+*.qmd
+setores.geojson
