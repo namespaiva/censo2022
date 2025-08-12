@@ -14,9 +14,11 @@ def get_connection():
     except Exception as e:
         st.error(f"Erro ao conectar ao banco de dados: {e}")
 
+conn = get_connection()
+
 @st.cache_data()
 def load_data():
-    df = get_connection().query("SELECT * FROM populacao")
+    df = conn.query("SELECT * FROM populacao")
     with open("dados/setores_santos.geojson", "r", encoding="utf-8") as f:
         geojson_setores = json.load(f)
     return df, geojson_setores
