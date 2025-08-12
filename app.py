@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import psycopg
 import json
 
 st.set_page_config(page_title="Dados do IBGE", page_icon="🌎", layout='wide',initial_sidebar_state="collapsed")
