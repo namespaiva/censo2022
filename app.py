@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import json
-import os 
+import json 
 from supabase import create_client, Client
 
 st.set_page_config(page_title="Dados do Censo 2022 do IBGE", page_icon="🌎", layout='wide')
