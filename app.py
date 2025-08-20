@@ -41,11 +41,22 @@ def load_data():
 
 dfpop, dflogs, geojson_setores = load_data()
 
+feats = geojson_setores["features"]
+dfsetores = pd.json_normalize(feats)
+dfsetores.rename(columns={"properties.CD_SETOR": "cd_setor",
+                          "properties.NM_BAIRRO": "bairro",
+                          "properties.SITUACAO": "situacao",
+                          "properties.NM_NU": "nucleo_urbano",
+                          "properties.NM_FCU": "favela_comunidade",
+                          "properties.NM_AGLOM": "aglomerado"}, inplace=True)
+dfsetores["cd_setor"] = dfsetores["cd_setor"].astype(int)
+
 # Alterando o nome da coluna para melhor legibilidade no mapa do Plotly.
-dfpop.rename(columns={"total_pessoas": "Total de Pessoas"}, inplace=True)
+dfpop.rename(columns={"cd_setor": "Código do Setor", 
+                      "total_pessoas": "Total de Pessoas"}, inplace=True)
 
 # Debug do json
-#st.json(geojson_setores)
+# st.json(geojson_setores)
 
 # Debug do dataframe
 #st.dataframe(df)
@@ -83,7 +94,7 @@ with c2:
         fig = px.choropleth_map(
             df_filtered,
             geojson=geojson_setores,
-            locations="cd_setor",
+            locations="Código do Setor",
             featureidkey="properties.CD_SETOR",
             color_continuous_scale="Reds",
             # Fixando os valores minimos e máximos com valores do banco. 
@@ -116,7 +127,7 @@ with c2:
             
             setor_selected = [int(i["properties"]["CD_SETOR"]) for i in selected_data["selection"]["points"]]
 
-            df_selected_setor = dfpop[dfpop["cd_setor"].isin(setor_selected)]
+            df_selected_setor = dfpop[dfpop["Código do Setor"].isin(setor_selected)]
 
             with st.expander("Estatísticas agregadas dos setores selecionados"):
                 st.write("Total de Pessoas nos setores selecionados:", df_selected_setor["Total de Pessoas"].sum())
@@ -129,7 +140,16 @@ with c2:
 
             with st.expander("Setores individuais"):
                 for index, row in df_selected_setor.iterrows():
-                    with st.expander(f"Estatísticas do Setor {int(row['cd_setor'])}"):
+                    with st.expander(f"Estatísticas do Setor {int(row['Código do Setor'])}"):
+                        setor = dfsetores[dfsetores["cd_setor"] == int(row["Código do Setor"])]
+                        st.markdown(f"Bairro: :green[{setor['bairro'].values[0]}]")
+                        if setor["nucleo_urbano"].values[0] is not None:
+                            st.markdown(f"Núcleo Urbano: :green[{setor['nucleo_urbano'].values[0]}]")
+                        if setor["favela_comunidade"].values[0] is not None:
+                            st.markdown(f"Favela/Comunidade: :green[{setor['favela_comunidade'].values[0]}]")
+                        if setor["aglomerado"].values[0] is not None:
+                            st.markdown(f"Aglomerado: :green[{setor['aglomerado'].values[0]}]")
+                        st.markdown(f"Situação: :green[{setor['situacao'].values[0]}]")
                         st.write("Total de Pessoas:", int(row["Total de Pessoas"]))
                         st.write("Total de Domicílios:", int(row["total_domicilios"]))
                         st.write("Total de Domicílios Particulares:", int(row["total_domicilios_particulares"]))
@@ -140,8 +160,6 @@ with c2:
                         st.write("Área Domiciliada", row["area_domiciliada_km2"].round(2), "km²")
                         st.write("Densidade Demográfica Domiciliada", row["densidade_dem_domiciliada"].round(2), "hab/km²")
                         st.write("Densidade Demográfica do Setor", row["densidade_dem_setor"].round(2), "hab/km²")
-
-
 st.write("")
 st.divider()
 st.write("""
