@@ -73,7 +73,7 @@ def filter(filtro):
     df_filtered = dfpop.copy()
     if filtro is not None and filtro != []:
         df_selected_logs = dflogs[dflogs["logradouro_completo"].isin(filtro)]
-        df_filtered = dfpop[dfpop["cd_setor"].isin(df_selected_logs["cd_setor"])]
+        df_filtered = dfpop[dfpop["Código do Setor"].isin(df_selected_logs["cd_setor"])]
     if df_filtered.empty:
         st.warning("Nenhum setor encontrado para um ou mais logradouros selecionados. " \
         "Isso pode ser pois esse logradouro passa dentro de um setor, e não nas suas arestas.")
