@@ -31,15 +31,17 @@ def load_data():
 
     pop_resp = supabase.table("populacao").select("*").execute()
     logs_resp = supabase.table("logradouro_setor").select("*").execute()
+    demog_resp = supabase.table("demografia_setor").select("*").execute()
 
     dfpop = pd.DataFrame(pop_resp.data)
     dflogs = pd.DataFrame(logs_resp.data)
+    dfdemog = pd.DataFrame(demog_resp.data)
 
     with open("dados/setores_santos.geojson", "r", encoding="utf-8") as f:
         geojson_setores = json.load(f)
-    return dfpop, dflogs, geojson_setores
+    return dfpop, dflogs, dfdemog, geojson_setores
 
-dfpop, dflogs, geojson_setores = load_data()
+dfpop, dflogs, dfdemog, geojson_setores = load_data()
 
 feats = geojson_setores["features"]
 dfsetores = pd.json_normalize(feats)
@@ -63,7 +65,7 @@ df_filtered = dfpop.copy()
 c1 = st.container()
 c2 = st.container()
 
-colData, colMap = st.columns([1, 3])
+colData, colMap = st.columns([1, 2])
 selected_data = None
 
 # Realiza filtragem no dataframe com base na seleção do Multiselect, apenas se valores forem selecionados.
@@ -160,6 +162,47 @@ with c2:
                 for index, row in df_selected_setor.iterrows():
                     with st.expander(f"Estatísticas do Setor {int(row['Código do Setor'])}"):
                         setor = dfsetores[dfsetores["cd_setor"] == int(row["Código do Setor"])]
+                        with st.expander("Demografia"):
+                            dfdemog_setor = dfdemog[dfdemog["cd_setor"] == int(row["Código do Setor"])]
+                            with st.expander("Por Idade"):
+                                st.write("Habitantes de 0 a 4 anos: ", dfdemog_setor["0_a_4_anos"].values[0])
+                                st.write("Habitantes de 5 a 9 anos: ", dfdemog_setor["5_a_9_anos"].values[0])
+                                st.write("Habitantes de 10 a 14 anos: ", dfdemog_setor["10_a_14_anos"].values[0])
+                                st.write("Habitantes de 15 a 19 anos: ", dfdemog_setor["15_a_19_anos"].values[0])
+                                st.write("Habitantes de 20 a 24 anos: ", dfdemog_setor["20_a_24_anos"].values[0])
+                                st.write("Habitantes de 25 a 29 anos: ", dfdemog_setor["25_a_29_anos"].values[0])
+                                st.write("Habitantes de 30 a 39 anos: ", dfdemog_setor["30_a_39_anos"].values[0])
+                                st.write("Habitantes de 40 a 49 anos: ", dfdemog_setor["40_a_49_anos"].values[0])
+                                st.write("Habitantes de 50 a 59 anos: ", dfdemog_setor["50_a_59_anos"].values[0])
+                                st.write("Habitantes de 60 a 69 anos: ", dfdemog_setor["60_a_69_anos"].values[0])
+                                st.write("Habitantes de 70 anos ou mais: ", dfdemog_setor["70_anos_ou_mais"].values[0])
+                            with st.expander("Por Sexo e Idade"):
+                                st.write("Total de Habitantes do Sexo Masculino: ", dfdemog_setor["sexo_masculino"].values[0])
+                                st.write("Total de Habitantes do Sexo Feminino: ", dfdemog_setor["sexo_feminino"].values[0])
+                                with st.expander("Detalhes - Masculino"):
+                                    st.write("Homens de 0 a 4 anos: ", dfdemog_setor["sexo_masculino_0_a_4_anos"].values[0])
+                                    st.write("Homens de 5 a 9 anos: ", dfdemog_setor["sexo_masculino_5_a_9_anos"].values[0])
+                                    st.write("Homens de 10 a 14 anos: ", dfdemog_setor["sexo_masculino_10_a_14_anos"].values[0])
+                                    st.write("Homens de 15 a 19 anos: ", dfdemog_setor["sexo_masculino_15_a_19_anos"].values[0])
+                                    st.write("Homens de 20 a 24 anos: ", dfdemog_setor["sexo_masculino_20_a_24_anos"].values[0])
+                                    st.write("Homens de 25 a 29 anos: ", dfdemog_setor["sexo_masculino_25_a_29_anos"].values[0])
+                                    st.write("Homens de 30 a 39 anos: ", dfdemog_setor["sexo_masculino_30_a_39_anos"].values[0])
+                                    st.write("Homens de 40 a 49 anos: ", dfdemog_setor["sexo_masculino_40_a_49_anos"].values[0])
+                                    st.write("Homens de 50 a 59 anos: ", dfdemog_setor["sexo_masculino_50_a_59_anos"].values[0])
+                                    st.write("Homens de 60 a 69 anos: ", dfdemog_setor["sexo_masculino_60_a_69_anos"].values[0])
+                                    st.write("Homens de 70 anos ou mais: ", dfdemog_setor["sexo_masculino_70_anos_ou_mais"].values[0])
+                                with st.expander("Detalhes - Feminino"):
+                                    st.write("Mulheres de 0 a 4 anos: ", dfdemog_setor["sexo_feminino_0_a_4_anos"].values[0])
+                                    st.write("Mulheres de 5 a 9 anos: ", dfdemog_setor["sexo_feminino_5_a_9_anos"].values[0])
+                                    st.write("Mulheres de 10 a 14 anos: ", dfdemog_setor["sexo_feminino_10_a_14_anos"].values[0])
+                                    st.write("Mulheres de 15 a 19 anos: ", dfdemog_setor["sexo_feminino_15_a_19_anos"].values[0])
+                                    st.write("Mulheres de 20 a 24 anos: ", dfdemog_setor["sexo_feminino_20_a_24_anos"].values[0])
+                                    st.write("Mulheres de 25 a 29 anos: ", dfdemog_setor["sexo_feminino_25_a_29_anos"].values[0])
+                                    st.write("Mulheres de 30 a 39 anos: ", dfdemog_setor["sexo_feminino_30_a_39_anos"].values[0])
+                                    st.write("Mulheres de 40 a 49 anos: ", dfdemog_setor["sexo_feminino_40_a_49_anos"].values[0])
+                                    st.write("Mulheres de 50 a 59 anos: ", dfdemog_setor["sexo_feminino_50_a_59_anos"].values[0])
+                                    st.write("Mulheres de 60 a 69 anos: ", dfdemog_setor["sexo_feminino_60_a_69_anos"].values[0])
+                                    st.write("Mulheres de 70 anos ou mais: ", dfdemog_setor["sexo_feminino_70_anos_ou_mais"].values[0])
                         with st.expander(f"Logradouro(s)"):
                             for log in dflogs[dflogs["cd_setor"] == int(row["Código do Setor"])]["logradouro_completo"].unique().tolist():
                                 st.markdown(f":green[{log}]")
@@ -170,7 +213,8 @@ with c2:
                             st.markdown(f"Favela/Comunidade: :green[{setor['favela_comunidade'].values[0]}]")
                         if setor["aglomerado"].values[0] is not None:
                             st.markdown(f"Aglomerado: :green[{setor['aglomerado'].values[0]}]")
-                        st.markdown(f"Situação: :green[{setor['situacao'].values[0]}]")
+                        # Comentado pois todos os setores estão como "Urbana"
+                        #st.markdown(f"Situação: :green[{setor['situacao'].values[0]}]")
                         st.write("Total de Pessoas:", int(row["Total de Pessoas"]))
                         st.write("Total de Domicílios:", int(row["total_domicilios"]))
                         st.write("Total de Domicílios Particulares:", int(row["total_domicilios_particulares"]))
@@ -184,6 +228,7 @@ with c2:
                             st.write("Densidade Demográfica do Setor", round(row["densidade_dem_setor"]), "hab/km²")
                         except KeyError:
                             st.write("Densidade Demográfica não disponível")
+
 
 st.divider()
 st.write("""
