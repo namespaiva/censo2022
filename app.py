@@ -50,16 +50,15 @@ dfsetores.rename(columns={"properties.CD_SETOR": "cd_setor",
                           "properties.NM_FCU": "favela_comunidade",
                           "properties.NM_AGLOM": "aglomerado"}, inplace=True)
 dfsetores["cd_setor"] = dfsetores["cd_setor"].astype(int)
+dfsetores["bairro"] = dfsetores["bairro"].fillna("Não informado")
+dfbairro = dfsetores[["cd_setor", "bairro"]].copy()
+dfpop = dfpop.merge(dfbairro, how="left", left_on="cd_setor", right_on="cd_setor")
 
 # Alterando o nome da coluna para melhor legibilidade no mapa do Plotly.
 dfpop.rename(columns={"cd_setor": "Código do Setor", 
                       "total_pessoas": "Total de Pessoas"}, inplace=True)
 
-# Debug do json
-# st.json(geojson_setores)
-
-# Debug do dataframe
-#st.dataframe(df)
+df_filtered = dfpop.copy()
 
 c1 = st.container()
 c2 = st.container()
@@ -68,26 +67,41 @@ colData, colMap = st.columns([1, 3])
 selected_data = None
 
 # Realiza filtragem no dataframe com base na seleção do Multiselect, apenas se valores forem selecionados.
-def filter(filtro):
+def filter(selecao, filtro):
     global df_filtered
-    df_filtered = dfpop.copy()
-    if filtro is not None and filtro != []:
-        df_selected_logs = dflogs[dflogs["logradouro_completo"].isin(filtro)]
-        df_filtered = dfpop[dfpop["Código do Setor"].isin(df_selected_logs["cd_setor"])]
+
+    if selecao is not None and selecao != []:
+        if df_filtered is None:
+            df_filtered = dfpop.copy()
+        if filtro == "bairros":
+            df_selected_bairros = dfsetores[dfsetores["bairro"].isin(selecao)]
+            df_filtered = dfpop[dfpop["Código do Setor"].isin(df_selected_bairros["cd_setor"])]
+
+        if filtro == "logradouros":
+            df_selected_logs = dflogs[dflogs["logradouro_completo"].isin(selecao)]
+            df_filtered = df_filtered[df_filtered["Código do Setor"].isin(df_selected_logs["cd_setor"])]
+
     if df_filtered.empty:
-        st.warning("Nenhum setor encontrado para um ou mais logradouros selecionados. " \
-        "Isso pode ser pois esse logradouro passa dentro de um setor, e não nas suas arestas.")
+        st.warning("Nenhum setor encontrado para um ou mais logradouros ou bairros selecionados. " \
+        "Isso pode ser pois esse logradouro passa dentro de um setor, e não nas suas arestas." \
+        "Ou então o bairro não possui setores na base de dados.")
         df_filtered = dfpop.copy()
 
 with c1:
+    selected_bairros = st.multiselect(
+        "Selecione o(s) bairro(s)",
+        options=sorted(list(dfsetores["bairro"].unique())),
+        placeholder="Digite o nome do bairro"
+    )
+    filter(selected_bairros, "bairros")
+    
     selected_logs = st.multiselect(
         "Selecione o(s) logradouro(s)",
-        options=sorted(list(dflogs["logradouro_completo"].unique())),
+        options=sorted(list(dflogs["logradouro_completo"][dflogs["cd_setor"].isin(df_filtered["Código do Setor"])].unique())),
         placeholder="Digite o nome do logradouro"
     )
-    filter(selected_logs)
+    filter(selected_logs, "logradouros")
     st.divider()
-
 
 with c2:
     with colMap:
@@ -115,8 +129,12 @@ with c2:
 
     with colData:
         if selected_data is None or selected_data["selection"]["points"] == []:
-            st.markdown(''':red-background[Nenhum setor selecionado.]  
-                        Selecione um ou mais setores no mapa para ver as estatísticas.''')
+            st.markdown('''
+                <div style="padding:10px;border-radius:5px;">
+                    <strong style="color:#ff4b4b">Nenhum setor selecionado.</strong>
+                    <p style="text-align: justify">Selecione um ou mais setores usando as ferramentas no canto superior direito do mapa para ver as estatísticas.</p>
+                </div>
+            ''', unsafe_allow_html=True)
         else:
             # debug do JSON de seleção
             #st.write("Setores selecionados:", selected_data)
@@ -142,6 +160,9 @@ with c2:
                 for index, row in df_selected_setor.iterrows():
                     with st.expander(f"Estatísticas do Setor {int(row['Código do Setor'])}"):
                         setor = dfsetores[dfsetores["cd_setor"] == int(row["Código do Setor"])]
+                        with st.expander(f"Logradouro(s)"):
+                            for log in dflogs[dflogs["cd_setor"] == int(row["Código do Setor"])]["logradouro_completo"].unique().tolist():
+                                st.markdown(f":green[{log}]")
                         st.markdown(f"Bairro: :green[{setor['bairro'].values[0]}]")
                         if setor["nucleo_urbano"].values[0] is not None:
                             st.markdown(f"Núcleo Urbano: :green[{setor['nucleo_urbano'].values[0]}]")
@@ -156,11 +177,14 @@ with c2:
                         st.write("Total de Domicílios Particulares Ocupados:", int(row["total_dom_part_ocupados"]))
                         st.write("Total de Domicílios Coletivos:", int(row["total_domicilios_coletivos"]))
                         st.write("Média de Moradores em Domicílios Particulares Ocupados:", row["media_moradores_dom_part_ocupados"])
-                        st.write("Percentual de Domicílios Particulares Ocupados Inputados:", (row["pc_dom_part_ocupados_inputados"] * 100).round(2), "%")
-                        st.write("Área Domiciliada", row["area_domiciliada_km2"].round(2), "km²")
-                        st.write("Densidade Demográfica Domiciliada", row["densidade_dem_domiciliada"].round(2), "hab/km²")
-                        st.write("Densidade Demográfica do Setor", row["densidade_dem_setor"].round(2), "hab/km²")
-st.write("")
+                        st.write("Percentual de Domicílios Particulares Ocupados Inputados:", round(row["pc_dom_part_ocupados_inputados"] * 100, 2), "%")
+                        st.write("Área Domiciliada", round(row["area_domiciliada_km2"]), "km²")
+                        try:
+                            st.write("Densidade Demográfica Domiciliada", round(row["densidade_dem_domiciliada"]), "hab/km²")
+                            st.write("Densidade Demográfica do Setor", round(row["densidade_dem_setor"]), "hab/km²")
+                        except KeyError:
+                            st.write("Densidade Demográfica não disponível")
+
 st.divider()
 st.write("""
          Fonte dos dados: IBGE - Censo Demográfico 2022  
