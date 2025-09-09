@@ -156,7 +156,51 @@ with c2:
                 st.write("Total de Domicílios Particulares Ocupados:", df_selected_setor["total_dom_part_ocupados"].sum())
                 st.write("Total de Domicílios Coletivos:", df_selected_setor["total_domicilios_coletivos"].sum())
                 st.write("Média de Moradores em Domicílios Particulares Ocupados:", df_selected_setor["media_moradores_dom_part_ocupados"].mean().round(2))
-                st.write("Média do Percent. Domicílios Particulares Ocupados", (df_selected_setor["pc_dom_part_ocupados_inputados"].mean() * 100).round(2), "%")
+                st.write("Média do Percent. Domicílios Particulares Ocupados", round(df_selected_setor["pc_dom_part_ocupados_inputados"].mean() * 100, 2), "%")
+
+                # AGREGADO POR IDADE
+                with st.expander("Habitantes por Faixa Etária (Agregado)"):
+                    dfdemog_selected = dfdemog[dfdemog["cd_setor"].isin(df_selected_setor["Código do Setor"])]
+                    st.write("Habitantes de 0 a 4 anos: ", dfdemog_selected["0_a_4_anos"].sum())
+                    st.write("Habitantes de 5 a 9 anos: ", dfdemog_selected["5_a_9_anos"].sum())
+                    st.write("Habitantes de 10 a 14 anos: ", dfdemog_selected["10_a_14_anos"].sum())
+                    st.write("Habitantes de 15 a 19 anos: ", dfdemog_selected["15_a_19_anos"].sum())
+                    st.write("Habitantes de 20 a 24 anos: ", dfdemog_selected["20_a_24_anos"].sum())
+                    st.write("Habitantes de 25 a 29 anos: ", dfdemog_selected["25_a_29_anos"].sum())
+                    st.write("Habitantes de 30 a 39 anos: ", dfdemog_selected["30_a_39_anos"].sum())
+                    st.write("Habitantes de 40 a 49 anos: ", dfdemog_selected["40_a_49_anos"].sum())
+                    st.write("Habitantes de 50 a 59 anos: ", dfdemog_selected["50_a_59_anos"].sum())
+                    st.write("Habitantes de 60 a 69 anos: ", dfdemog_selected["60_a_69_anos"].sum())
+                    st.write("Habitantes de 70 anos ou mais: ", dfdemog_selected["70_anos_ou_mais"].sum())
+
+                # AGREGADO POR SEXO E IDADE
+                with st.expander("Habitantes por Sexo e Idade (Agregado)"):
+                    st.write("Total de Habitantes do Sexo Masculino: ", dfdemog_selected["sexo_masculino"].sum())
+                    st.write("Total de Habitantes do Sexo Feminino: ", dfdemog_selected["sexo_feminino"].sum())
+                    with st.expander("Detalhes - Masculino (Agregado)"):
+                        st.write("Homens de 0 a 4 anos: ", dfdemog_selected["sexo_masculino_0_a_4_anos"].sum())
+                        st.write("Homens de 5 a 9 anos: ", dfdemog_selected["sexo_masculino_5_a_9_anos"].sum())
+                        st.write("Homens de 10 a 14 anos: ", dfdemog_selected["sexo_masculino_10_a_14_anos"].sum())
+                        st.write("Homens de 15 a 19 anos: ", dfdemog_selected["sexo_masculino_15_a_19_anos"].sum())
+                        st.write("Homens de 20 a 24 anos: ", dfdemog_selected["sexo_masculino_20_a_24_anos"].sum())
+                        st.write("Homens de 25 a 29 anos: ", dfdemog_selected["sexo_masculino_25_a_29_anos"].sum())
+                        st.write("Homens de 30 a 39 anos: ", dfdemog_selected["sexo_masculino_30_a_39_anos"].sum())
+                        st.write("Homens de 40 a 49 anos: ", dfdemog_selected["sexo_masculino_40_a_49_anos"].sum())
+                        st.write("Homens de 50 a 59 anos: ", dfdemog_selected["sexo_masculino_50_a_59_anos"].sum())
+                        st.write("Homens de 60 a 69 anos: ", dfdemog_selected["sexo_masculino_60_a_69_anos"].sum())
+                        st.write("Homens de 70 anos ou mais: ", dfdemog_selected["sexo_masculino_70_anos_ou_mais"].sum())
+                    with st.expander("Detalhes - Feminino (Agregado)"):
+                        st.write("Mulheres de 0 a 4 anos: ", dfdemog_selected["sexo_feminino_0_a_4_anos"].sum())
+                        st.write("Mulheres de 5 a 9 anos: ", dfdemog_selected["sexo_feminino_5_a_9_anos"].sum())
+                        st.write("Mulheres de 10 a 14 anos: ", dfdemog_selected["sexo_feminino_10_a_14_anos"].sum())
+                        st.write("Mulheres de 15 a 19 anos: ", dfdemog_selected["sexo_feminino_15_a_19_anos"].sum())
+                        st.write("Mulheres de 20 a 24 anos: ", dfdemog_selected["sexo_feminino_20_a_24_anos"].sum())
+                        st.write("Mulheres de 25 a 29 anos: ", dfdemog_selected["sexo_feminino_25_a_29_anos"].sum())
+                        st.write("Mulheres de 30 a 39 anos: ", dfdemog_selected["sexo_feminino_30_a_39_anos"].sum())
+                        st.write("Mulheres de 40 a 49 anos: ", dfdemog_selected["sexo_feminino_40_a_49_anos"].sum())
+                        st.write("Mulheres de 50 a 59 anos: ", dfdemog_selected["sexo_feminino_50_a_59_anos"].sum())
+                        st.write("Mulheres de 60 a 69 anos: ", dfdemog_selected["sexo_feminino_60_a_69_anos"].sum())
+                        st.write("Mulheres de 70 anos ou mais: ", dfdemog_selected["sexo_feminino_70_anos_ou_mais"].sum())
 
             with st.expander("Setores individuais"):
                 for index, row in df_selected_setor.iterrows():
